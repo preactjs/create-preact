@@ -2,59 +2,57 @@
 import { promises as fs, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { confirm, intro, isCancel, outro, select, spinner, text, note } from '@clack/prompts';
+import * as prompts from '@clack/prompts';
 import { install, projectInstall } from 'pkg-install';
 import * as kl from 'kolorist';
 
-/**
- * @param {unknown | symbol} input
- */
-function handleCancel(input) {
-	if (isCancel(input)) {
-		outro(kl.yellow('Cancelled'));
-		process.exit(0);
-	}
-}
-
 (async function createPreact() {
-	intro(kl.lightMagenta('Preact - Fast 3kB alternative to React with the same modern API'));
+	prompts.intro(kl.lightMagenta('Preact - Fast 3kB alternative to React with the same modern API'));
 
-	const dir = await text({
-		message: 'Project directory:',
-		placeholder: 'my-preact-app',
-		validate(value) {
-			if (value.length == 0) {
-				return 'Directory name is required!';
-			} else if (existsSync(value)) {
-				return 'Refusing to overwrite existing directory or file! Please provide a non-clashing name.';
-			}
+	const { dir, language, useRouter, useESLint } = await prompts.group(
+		{
+			dir: () =>
+				prompts.text({
+					message: 'Project directory:',
+					placeholder: 'my-preact-app',
+					validate(value) {
+						if (value.length == 0) {
+							return 'Directory name is required!';
+						} else if (existsSync(value)) {
+							return 'Refusing to overwrite existing directory or file! Please provide a non-clashing name.';
+						}
+					},
+				}),
+			language: () =>
+				prompts.select({
+					message: 'Project language:',
+					initialValue: 'js',
+					options: [
+						{ value: 'js', label: 'JavaScript' },
+						{ value: 'ts', label: 'TypeScript' },
+					],
+				}),
+			useRouter: () =>
+				prompts.confirm({
+					message: 'Use router?',
+					initialValue: false,
+				}),
+			useESLint: () =>
+				prompts.confirm({
+					message: 'Use ESLint?',
+					initialValue: false,
+				}),
 		},
-	});
-	handleCancel(dir);
-
-	const language = await select({
-		message: 'Project language:',
-		options: [
-			{ value: 'js', label: 'JavaScript' },
-			{ value: 'ts', label: 'TypeScript' },
-		],
-	});
-	handleCancel(language);
+		{
+			onCancel: () => {
+				prompts.cancel(kl.yellow('Cancelled'));
+				process.exit(0);
+			},
+		},
+	);
 	const useTS = language === 'ts';
 
-	const useRouter = await confirm({
-		message: 'Use router?',
-		initialValue: false,
-	});
-	handleCancel(useRouter);
-
-	const useESLint = await confirm({
-		message: 'Use ESLint?',
-		initialValue: false,
-	});
-	handleCancel(useRouter);
-
-	const s = spinner();
+	const s = prompts.spinner();
 
 	const targetDir = resolve(process.cwd(), dir);
 
@@ -72,9 +70,9 @@ function handleCancel(input) {
 		${kl.dim('$')} ${kl.lightBlue(`cd ${dir}`)}
 		${kl.dim('$')} ${kl.lightBlue(`${packageManager === 'npm' ? 'npm run' : 'yarn'} dev`)}
 	`;
-	note(gettingStarted.trim().replace(/^\t\t/gm, ''), 'Getting Started');
+	prompts.note(gettingStarted.trim().replace(/^\t\t/gm, ''), 'Getting Started');
 
-	outro(kl.green(`You're all set!`));
+	prompts.outro(kl.green(`You're all set!`));
 })();
 
 /**
@@ -170,6 +168,10 @@ async function installDeps(to, packageManager, opts) {
 	}
 
 	if (opts.useESLint) {
-		await install(['eslint', 'eslint-config-preact'], { prefer: packageManager, cwd: to, dev: true });
+		await install(['eslint', 'eslint-config-preact'], {
+			prefer: packageManager,
+			cwd: to,
+			dev: true,
+		});
 	}
 }
