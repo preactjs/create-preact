@@ -48,18 +48,24 @@ function handleCancel(input) {
 	});
 	handleCancel(useRouter);
 
+	const useESLint = await confirm({
+		message: 'Use ESLint?',
+		initialValue: false,
+	});
+	handleCancel(useRouter);
+
 	const s = spinner();
 
 	const targetDir = resolve(process.cwd(), dir);
 
 	s.start('Setting up your project directory...');
-	await scaffold(targetDir, useTS, useRouter);
+	await scaffold(targetDir, { useTS, useRouter, useESLint });
 	s.stop(kl.green('Set up project directory'));
 
 	const packageManager = /yarn/.test(process.env.npm_execpath) ? 'yarn' : 'npm';
 
 	s.start('Installing project dependencies...');
-	await installDeps(targetDir, useTS, useRouter, packageManager);
+	await installDeps(targetDir, packageManager, { useTS, useRouter, useESLint });
 	s.stop(kl.green('Installed project dependencies'));
 
 	const gettingStarted = `
@@ -75,24 +81,26 @@ function handleCancel(input) {
  * Copy template files to user's chosen directory
  *
  * @param {string} to
- * @param {boolean} useTS
- * @param {boolean} useRouter
+ * @param {object} opts
+ * @param {boolean} opts.useTS
+ * @param {boolean} opts.useRouter
+ * @param {boolean} opts.useESLint
  */
-async function scaffold(to, useTS, useRouter) {
+async function scaffold(to, opts) {
 	await fs.mkdir(to, { recursive: true });
 
 	const __dirname = dirname(fileURLToPath(import.meta.url));
-	await templateDir(resolve(__dirname, '../templates', 'base'), to, useTS);
+	await templateDir(resolve(__dirname, '../templates', 'base'), to, opts.useTS);
 
-	if (useRouter) {
+	if (opts.useRouter) {
 		await templateDir(
 			resolve(__dirname, '../templates', 'config', 'router'),
 			resolve(to, 'src'),
-			useTS,
+			opts.useTS,
 		);
 	}
 
-	if (useTS) {
+	if (opts.useTS) {
 		await fs.rename(resolve(to, 'jsconfig.json'), resolve(to, 'tsconfig.json'));
 
 		const htmlPath = resolve(to, 'index.html');
@@ -101,12 +109,11 @@ async function scaffold(to, useTS, useRouter) {
 	}
 
 	if (opts.useESLint) {
-		const pkgPath = resolve(to, 'package.json')
-		const pkgFile = await fs.readFile(pkgPath, 'utf-8');
-		const pkg = JSON.parse(pkgFile);
+		const pkgPath = resolve(to, 'package.json');
+		const pkg = JSON.parse(await fs.readFile(pkgPath, 'utf-8'));
 		pkg.eslintConfig = {
-			'extends': 'preact'
-		}
+			extends: 'preact',
+		};
 		await fs.writeFile(pkgPath, JSON.stringify(pkg, null, '\t'));
 	}
 
@@ -142,21 +149,27 @@ async function templateDir(from, to, useTS) {
 
 /**
  * @param {string} to
- * @param {boolean} useTS
- * @param {boolean} useRouter
  * @param {'yarn' | 'npm'} packageManager
+ * @param {object} opts
+ * @param {boolean} opts.useTS
+ * @param {boolean} opts.useRouter
+ * @param {boolean} opts.useESLint
  */
-async function installDeps(to, useTS, useRouter, packageManager) {
+async function installDeps(to, packageManager, opts) {
 	await projectInstall({ prefer: packageManager, cwd: to });
 
-	if (useTS) {
+	if (opts.useTS) {
 		await install(['typescript'], { prefer: packageManager, cwd: to, dev: true });
 	}
 
-	if (useRouter) {
+	if (opts.useRouter) {
 		await install(['preact-iso', 'preact-render-to-string'], {
 			prefer: packageManager,
 			cwd: to,
 		});
+	}
+
+	if (opts.useESLint) {
+		await install(['eslint', 'eslint-config-preact'], { prefer: packageManager, cwd: to, dev: true });
 	}
 }
