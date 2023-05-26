@@ -7,7 +7,9 @@ import { install, projectInstall } from 'pkg-install';
 import * as kl from 'kolorist';
 
 (async function createPreact() {
-	prompts.intro(kl.lightMagenta('Preact - Fast 3kB alternative to React with the same modern API'));
+	prompts.intro(
+		kl.lightMagenta('Preact - Fast 3kB alternative to React with the same modern API'),
+	);
 
 	const { dir, language, useRouter, useESLint } = await prompts.group(
 		{
@@ -121,7 +123,7 @@ async function scaffold(to, opts) {
 }
 
 /**
- * Recursive fs copy, adopted from create-wmr
+ * Recursive fs copy, swiped from `create-wmr`:
  * https://github.com/preactjs/wmr/blob/3c5672ecd2f958c8eaf372d33c084dc69228ae3f/packages/create-wmr/src/index.js#L108-L124
  *
  * @param {string} from

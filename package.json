@@ -1,15 +1,14 @@
 {
 	"name": "create-preact",
 	"version": "0.1.0",
-	"description": "",
+	"description": "Create a Vite-powered Preact app in seconds",
 	"type": "module",
 	"bin": "./src/index.js",
 	"scripts": {
 		"postinstall": "patch-package",
 		"format": "prettier --write --ignore-path .gitignore ."
 	},
-	"keywords": [],
-	"author": "",
+	"authors": "The Preact Authors (https://preactjs.com)",
 	"license": "MIT",
 	"dependencies": {
 		"@clack/prompts": "^0.6.3",
