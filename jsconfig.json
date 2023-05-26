@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "NodeNext",
+		"allowJs": true,
+		"checkJs": true,
+		"resolveJsonModule": true,
+		"noEmit": true,
+		"jsx": "react-jsx",
+		"jsxImportSource": "preact"
+	}
+}

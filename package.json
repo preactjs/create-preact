@@ -1,0 +1,29 @@
+{
+	"name": "create-preact",
+	"version": "0.1.0",
+	"description": "",
+	"type": "module",
+	"bin": "./src/index.js",
+	"scripts": {
+		"postinstall": "patch-package",
+		"format": "prettier --write --ignore-path .gitignore ."
+	},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"dependencies": {
+		"@clack/prompts": "^0.6.3",
+		"kolorist": "^1.8.0",
+		"pkg-install": "*"
+	},
+	"devDependencies": {
+		"@types/node": "^20.2.3",
+		"patch-package": "^6.5.1",
+		"postinstall-postinstall": "^2.1.0",
+		"preact": "^10.15.0",
+		"prettier": "^2.6.2",
+		"prettier-config-rschristian": "^0.1.1",
+		"typescript": "^5.0.0"
+	},
+	"prettier": "prettier-config-rschristian"
+}
