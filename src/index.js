@@ -10,6 +10,12 @@ const s = prompts.spinner();
 const brandColor = /** @type {const} */ ([174, 128, 255]);
 
 (async function createPreact() {
+	// Silences the 'Getting Started' info, mainly
+	// for use in other initializers that may wrap this
+	// one but provide their own scripts/instructions.
+	//
+	// Don't love the flag, need to find a better name.
+	const skipHint = process.argv.slice(2).includes('--skip-hints');
 	const packageManager = /yarn/.test(process.env.npm_execpath) ? 'yarn' : 'npm';
 
 	prompts.intro(
@@ -72,11 +78,13 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 		'Installed project dependencies'
 	);
 
-	const gettingStarted = `
-		${kl.dim('$')} ${kl.lightBlue(`cd ${dir}`)}
-		${kl.dim('$')} ${kl.lightBlue(`${packageManager === 'npm' ? 'npm run' : 'yarn'} dev`)}
-	`;
-	prompts.note(gettingStarted.trim().replace(/^\t\t/gm, ''), 'Getting Started');
+	if (!skipHint) {
+		const gettingStarted = `
+			${kl.dim('$')} ${kl.lightBlue(`cd ${dir}`)}
+			${kl.dim('$')} ${kl.lightBlue(`${packageManager === 'npm' ? 'npm run' : 'yarn'} dev`)}
+		`;
+		prompts.note(gettingStarted.trim().replace(/^\t\t\t/gm, ''), 'Getting Started');
+	}
 
 	prompts.outro(kl.green(`You're all set!`));
 })();
