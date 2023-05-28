@@ -6,7 +6,11 @@ import * as prompts from '@clack/prompts';
 import { install, projectInstall } from 'pkg-install';
 import * as kl from 'kolorist';
 
+const s = prompts.spinner();
+
 (async function createPreact() {
+	const packageManager = /yarn/.test(process.env.npm_execpath) ? 'yarn' : 'npm';
+
 	prompts.intro(
 		kl.lightMagenta('Preact - Fast 3kB alternative to React with the same modern API'),
 	);
@@ -52,21 +56,20 @@ import * as kl from 'kolorist';
 			},
 		},
 	);
+	const targetDir = resolve(process.cwd(), dir);
 	const useTS = language === 'ts';
 
-	const s = prompts.spinner();
+	await useSpinner(
+		'Setting up your project directory...',
+		() => scaffold(targetDir, { useTS, useRouter, useESLint }),
+		'Set up project directory'
+	);
 
-	const targetDir = resolve(process.cwd(), dir);
-
-	s.start('Setting up your project directory...');
-	await scaffold(targetDir, { useTS, useRouter, useESLint });
-	s.stop(kl.green('Set up project directory'));
-
-	const packageManager = /yarn/.test(process.env.npm_execpath) ? 'yarn' : 'npm';
-
-	s.start('Installing project dependencies...');
-	await installDeps(targetDir, packageManager, { useTS, useRouter, useESLint });
-	s.stop(kl.green('Installed project dependencies'));
+	await useSpinner(
+		'Installing project dependencies...',
+		() => installDeps(targetDir, packageManager, { useTS, useRouter, useESLint }),
+		'Installed project dependencies'
+	);
 
 	const gettingStarted = `
 		${kl.dim('$')} ${kl.lightBlue(`cd ${dir}`)}
@@ -78,13 +81,28 @@ import * as kl from 'kolorist';
 })();
 
 /**
+ * @param {string} startMessage
+ * @param {() => Promise<void>} fn
+ * @param {string} finishMessage
+ */
+async function useSpinner(startMessage, fn, finishMessage) {
+	s.start(startMessage);
+	await fn();
+	s.stop(kl.green(finishMessage));
+}
+
+/**
+ * @typedef {Object} ConfigOptions
+ * @property {boolean} useTS
+ * @property {boolean} useRouter
+ * @property {boolean} useESLint
+ */
+
+/**
  * Copy template files to user's chosen directory
  *
  * @param {string} to
- * @param {object} opts
- * @param {boolean} opts.useTS
- * @param {boolean} opts.useRouter
- * @param {boolean} opts.useESLint
+ * @param {ConfigOptions} opts
  */
 async function scaffold(to, opts) {
 	await fs.mkdir(to, { recursive: true });
@@ -150,10 +168,7 @@ async function templateDir(from, to, useTS) {
 /**
  * @param {string} to
  * @param {'yarn' | 'npm'} packageManager
- * @param {object} opts
- * @param {boolean} opts.useTS
- * @param {boolean} opts.useRouter
- * @param {boolean} opts.useESLint
+ * @param {ConfigOptions} opts
  */
 async function installDeps(to, packageManager, opts) {
 	await projectInstall({ prefer: packageManager, cwd: to });
