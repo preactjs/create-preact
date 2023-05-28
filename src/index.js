@@ -7,12 +7,13 @@ import { install, projectInstall } from 'pkg-install';
 import * as kl from 'kolorist';
 
 const s = prompts.spinner();
+const brandColor = /** @type {const} */ ([174, 128, 255]);
 
 (async function createPreact() {
 	const packageManager = /yarn/.test(process.env.npm_execpath) ? 'yarn' : 'npm';
 
 	prompts.intro(
-		kl.lightMagenta('Preact - Fast 3kB alternative to React with the same modern API'),
+		kl.trueColor(...brandColor)('Preact - Fast 3kB alternative to React with the same modern API')
 	);
 
 	const { dir, language, useRouter, useESLint } = await prompts.group(
