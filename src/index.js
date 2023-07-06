@@ -143,10 +143,6 @@ async function scaffold(to, opts) {
 		};
 		await fs.writeFile(pkgPath, JSON.stringify(pkg, null, '\t'));
 	}
-
-	// Publishing to npm renames the .gitignore to .npmignore
-	// https://github.com/npm/npm/issues/7252#issuecomment-253339460
-	await fs.rename(resolve(to, '_gitignore'), resolve(to, '.gitignore'));
 }
 
 /**
@@ -168,6 +164,9 @@ async function templateDir(from, to, useTS) {
 				return templateDir(filename, resolve(to, f), useTS);
 			}
 			if (useTS && /\.jsx?$/.test(f)) f = f.replace('.js', '.ts');
+			// Publishing to npm renames the .gitignore to .npmignore
+			// https://github.com/npm/npm/issues/7252#issuecomment-253339460
+			if (f === '_gitignore') f = '.gitignore';
 			await fs.copyFile(filename, resolve(to, f));
 		}),
 	);
