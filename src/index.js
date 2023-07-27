@@ -57,7 +57,7 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 				prompts.confirm({
 					message: 'Use router?',
 					initialValue: false,
-				}) : false,
+				}) : new Promise(res => res(false)),
 			useESLint: () =>
 				prompts.confirm({
 					message: 'Use ESLint?',
