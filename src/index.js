@@ -22,7 +22,7 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 		kl.trueColor(...brandColor)('Preact - Fast 3kB alternative to React with the same modern API')
 	);
 
-	const { dir, language, useRouter, useESLint } = await prompts.group(
+	const { dir, language, useRouter, useESLint, type } = await prompts.group(
 		{
 			dir: () =>
 				prompts.text({
@@ -36,6 +36,14 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 						}
 					},
 				}),
+			type: () => prompts.select({
+				message: 'Project Type:',
+				initialValue: 'spa',
+				options: [
+					{ value: 'spa', label: 'Single Page Application (only client-side)' },
+					{ value: 'ssg', label: 'Static Site Generation (prerenders pages)' },
+				],
+			}),
 			language: () =>
 				prompts.select({
 					message: 'Project language:',
@@ -45,11 +53,11 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 						{ value: 'ts', label: 'TypeScript' },
 					],
 				}),
-			useRouter: () =>
+			useRouter: ({ results }) => results.type === 'spa' ?
 				prompts.confirm({
 					message: 'Use router?',
 					initialValue: false,
-				}),
+				}) : false,
 			useESLint: () =>
 				prompts.confirm({
 					message: 'Use ESLint?',
@@ -68,7 +76,7 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 
 	await useSpinner(
 		'Setting up your project directory...',
-		() => scaffold(targetDir, { useTS, useRouter, useESLint }),
+		() => scaffold(targetDir, { useTS, useRouter, useESLint, type }),
 		'Set up project directory'
 	);
 
@@ -105,6 +113,7 @@ async function useSpinner(startMessage, fn, finishMessage) {
  * @property {boolean} useTS
  * @property {boolean} useRouter
  * @property {boolean} useESLint
+ * @property {"spa" | "ssg"} type
  */
 
 /**
@@ -117,7 +126,11 @@ async function scaffold(to, opts) {
 	await fs.mkdir(to, { recursive: true });
 
 	const __dirname = dirname(fileURLToPath(import.meta.url));
-	await templateDir(resolve(__dirname, '../templates', 'base'), to, opts.useTS);
+	if (opts.type === 'spa') {
+		await templateDir(resolve(__dirname, '../templates', 'base'), to, opts.useTS);
+	} else {
+		await templateDir(resolve(__dirname, '../templates', 'ssg'), to, opts.useTS);
+	}
 
 	if (opts.useRouter) {
 		await templateDir(
@@ -132,6 +145,7 @@ async function scaffold(to, opts) {
 
 		const htmlPath = resolve(to, 'index.html');
 		const html = (await fs.readFile(htmlPath, 'utf-8')).replace('index.jsx', 'index.tsx');
+		// TODO: should we also rename all current jsx files to tsx?
 		return await fs.writeFile(htmlPath, html);
 	}
 
