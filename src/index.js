@@ -82,7 +82,7 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 
 	await useSpinner(
 		'Installing project dependencies...',
-		() => installDeps(targetDir, packageManager, { useTS, useRouter, useESLint }),
+		() => installDeps(targetDir, packageManager, { useTS, useRouter, useESLint, appType }),
 		'Installed project dependencies'
 	);
 
@@ -111,7 +111,7 @@ async function useSpinner(startMessage, fn, finishMessage) {
 /**
  * @typedef {Object} ConfigOptions
  * @property {boolean} useTS
- * @property {boolean} useRouter
+ * @property {unknown} useRouter
  * @property {boolean} useESLint
  * @property {string} appType
  */
