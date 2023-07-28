@@ -22,10 +22,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-.vim
-
-# Local Netlify folder
-.netlify
-
-./templates/**/package-lock.json
-./templates/**/yarn.lock

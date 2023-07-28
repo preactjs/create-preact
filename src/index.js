@@ -22,7 +22,7 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 		kl.trueColor(...brandColor)('Preact - Fast 3kB alternative to React with the same modern API')
 	);
 
-	const { dir, language, useRouter, useESLint } = await prompts.group(
+	const { dir, language, useRouter, useESLint, appType } = await prompts.group(
 		{
 			dir: () =>
 				prompts.text({
@@ -36,6 +36,14 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 						}
 					},
 				}),
+			appType : () => prompts.select({
+				message: 'Project Type:',
+				initialValue: 'spa',
+				options: [
+					{ value: 'spa', label: 'Single Page Application (only client-side)' },
+					{ value: 'ssg', label: 'Static Site Generation (prerenders pages)' },
+				],
+			}),
 			language: () =>
 				prompts.select({
 					message: 'Project language:',
@@ -45,11 +53,11 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 						{ value: 'ts', label: 'TypeScript' },
 					],
 				}),
-			useRouter: () =>
+			useRouter: ({ results }) => results.appType === 'spa' ?
 				prompts.confirm({
 					message: 'Use router?',
 					initialValue: false,
-				}),
+				}) : Promise.resolve(false),
 			useESLint: () =>
 				prompts.confirm({
 					message: 'Use ESLint?',
@@ -68,13 +76,13 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 
 	await useSpinner(
 		'Setting up your project directory...',
-		() => scaffold(targetDir, { useTS, useRouter, useESLint }),
+		() => scaffold(targetDir, { useTS, useRouter, useESLint, appType }),
 		'Set up project directory'
 	);
 
 	await useSpinner(
 		'Installing project dependencies...',
-		() => installDeps(targetDir, packageManager, { useTS, useRouter, useESLint }),
+		() => installDeps(targetDir, packageManager, { useTS, useRouter, useESLint, appType }),
 		'Installed project dependencies'
 	);
 
@@ -103,8 +111,9 @@ async function useSpinner(startMessage, fn, finishMessage) {
 /**
  * @typedef {Object} ConfigOptions
  * @property {boolean} useTS
- * @property {boolean} useRouter
+ * @property {unknown} useRouter
  * @property {boolean} useESLint
+ * @property {string} appType
  */
 
 /**
@@ -117,7 +126,11 @@ async function scaffold(to, opts) {
 	await fs.mkdir(to, { recursive: true });
 
 	const __dirname = dirname(fileURLToPath(import.meta.url));
-	await templateDir(resolve(__dirname, '../templates', 'base'), to, opts.useTS);
+	if (opts.appType === 'spa') {
+		await templateDir(resolve(__dirname, '../templates', 'base'), to, opts.useTS);
+	} else {
+		await templateDir(resolve(__dirname, '../templates', 'ssr'), to, opts.useTS);
+	}
 
 	if (opts.useRouter) {
 		await templateDir(
