@@ -1,29 +1,39 @@
 import preactLogo from './assets/preact.svg';
-import { useState } from 'preact/hooks'
-import viteLogo from '/vite.svg';
 import './style.css';
 
 export function Page() {
-	const [count, setCount] = useState(0);
-
 	return (
-		<>
-			<div>
-				<a href="https://vitejs.dev" target="_blank">
-					<img src={viteLogo} class="logo" alt="Vite logo" />
-				</a>
-				<a href="https://preactjs.com" target="_blank">
-					<img src={preactLogo} class="logo preact" alt="Preact logo" />
-				</a>
-			</div>
-			<h1>Vite + Preact</h1>
-			<div class="card">
-				<button onClick={() => setCount((count) => count + 1)}>count is {count}</button>
-				<p>
-					Edit <code>src/app.jsx</code> and save to test HMR
-				</p>
-			</div>
-			<p class="read-the-docs">Click on the Vite and Preact logos to learn more</p>
-		</>
+		<div>
+			<a href="https://preactjs.com" target="_blank">
+				<img src={preactLogo} alt="Preact logo" height="160" width="160" />
+			</a>
+			<h1>Get Started building Vite-powered Preact Apps </h1>
+			<section>
+				<Resource
+					title="Learn Preact"
+					description="If you're new to Preact, try the interactive tutorial to learn important concepts"
+					href="https://preactjs.com/tutorial"
+				/>
+				<Resource
+					title="Differences to React"
+					description="If you're coming from React, you may want to check out our docs to see where Preact differs"
+					href="https://preactjs.com/guide/v10/differences-to-react"
+				/>
+				<Resource
+					title="Learn Vite"
+					description="To learn more about Vite and how you can customize it to fit your needs, take a look at their excellent documentation"
+					href="https://vitejs.dev"
+				/>
+			</section>
+		</div>
+	);
+}
+
+function Resource(props) {
+	return (
+		<a href={props.href} target="_blank" class="resource">
+			<h2>{props.title}</h2>
+			<p>{props.description}</p>
+		</a>
 	);
 }
