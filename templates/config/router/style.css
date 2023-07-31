@@ -13,19 +13,17 @@
 	-webkit-text-size-adjust: 100%;
 }
 
-html,
 body {
-	height: 100%;
 	margin: 0;
 }
 
 #app {
 	display: flex;
 	flex-direction: column;
-	height: 100%;
+	min-height: 100vh;
 }
 
-#app > header {
+header {
 	display: flex;
 	justify-content: flex-end;
 	background-color: #673ab8;
@@ -49,7 +47,7 @@ header a:hover {
 	background-color: #0008;
 }
 
-#app > main {
+main {
 	flex: auto;
 	display: flex;
 	align-items: center;
@@ -89,7 +87,7 @@ header a:hover {
 }
 
 @media (max-width: 639px) {
-	#app > main {
+	main {
 		margin: 2rem;
 	}
 	.home section {
