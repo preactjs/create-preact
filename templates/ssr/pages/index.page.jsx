@@ -1,6 +1,7 @@
 import preactLogo from './assets/preact.svg';
 import { useState } from 'preact/hooks'
 import viteLogo from '/vite.svg';
+import './style.css';
 
 export function Page() {
 	const [count, setCount] = useState(0);
