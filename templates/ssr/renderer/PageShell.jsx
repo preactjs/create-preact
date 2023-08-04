@@ -1,17 +1,16 @@
-import { PageContextProvider } from './usePageContext'
+import { PageContextProvider } from './usePageContext';
 import './PageShell.css';
 
-export { PageShell }
+export { PageShell };
 
 function PageShell({ pageContext, children }) {
-  return (
-	<PageContextProvider pageContext={pageContext}>
-        <Header url={pageContext.urlPathname} />
-		<main>{children}</main>
-	</PageContextProvider>
-  )
+	return (
+		<PageContextProvider pageContext={pageContext}>
+			<Header url={pageContext.urlPathname} />
+			<main>{children}</main>
+		</PageContextProvider>
+	);
 }
-
 
 export function Header({ url }) {
 	return (
