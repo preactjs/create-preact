@@ -1,10 +1,9 @@
-import { render } from 'preact';
-import preactLogo from './assets/preact.svg';
+import preactLogo from '../../assets/preact.svg';
 import './style.css';
 
-export function App() {
+export function Home() {
 	return (
-		<div>
+		<div class="home">
 			<a href="https://preactjs.com" target="_blank">
 				<img src={preactLogo} alt="Preact logo" height="160" width="160" />
 			</a>
@@ -38,5 +37,3 @@ function Resource(props) {
 		</a>
 	);
 }
-
-render(<App />, document.getElementById('app'));

@@ -1,8 +1,7 @@
-import { render } from 'preact';
-import preactLogo from './assets/preact.svg';
+import preactLogo from '../assets/preact.svg';
 import './style.css';
 
-export function App() {
+export function Page() {
 	return (
 		<div>
 			<a href="https://preactjs.com" target="_blank">
@@ -38,5 +37,3 @@ function Resource(props) {
 		</a>
 	);
 }
-
-render(<App />, document.getElementById('app'));
