@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import preact from '@preact/preset-vite';
-import ssr from 'vite-plugin-ssr/plugin';
+import ssr from 'vike/plugin';
 
 // https://vitejs.dev/config/
 export default defineConfig({

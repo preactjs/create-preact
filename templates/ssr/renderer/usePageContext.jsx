@@ -1,5 +1,5 @@
 // `usePageContext` allows us to access `pageContext` in any Preact component.
-// See https://vite-plugin-ssr.com/pageContext-anywhere
+// See https://vike.dev/pageContext-anywhere
 
 import { createContext } from 'preact';
 import { useContext } from 'preact/hooks';
