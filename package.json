@@ -1,6 +1,6 @@
 {
 	"name": "create-preact",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"description": "Create a Vite-powered Preact app in seconds",
 	"type": "module",
 	"bin": "./src/index.js",
