@@ -1,7 +1,9 @@
-import preactLogo from '../assets/preact.svg';
+import { hydrate, prerender as ssr } from 'preact-iso';
+
+import preactLogo from './assets/preact.svg';
 import './style.css';
 
-export function Page() {
+export function App() {
 	return (
 		<div>
 			<a href="https://preactjs.com" target="_blank">
@@ -36,4 +38,12 @@ function Resource(props) {
 			<p>{props.description}</p>
 		</a>
 	);
+}
+
+if (typeof window !== 'undefined') {
+	hydrate(<App />, document.getElementById('app'));
+}
+
+export async function prerender(data) {
+	return await ssr(<App {...data} />);
 }
