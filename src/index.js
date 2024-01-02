@@ -24,7 +24,7 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 		),
 	);
 
-	const { dir, language, useRouter, useESLint, appType } = await prompts.group(
+	const { dir, language, useRouter, usePrerender, useESLint } = await prompts.group(
 		{
 			dir: () =>
 				prompts.text({
@@ -38,15 +38,6 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 						}
 					},
 				}),
-			appType: () =>
-				prompts.select({
-					message: 'Project Type:',
-					initialValue: 'spa',
-					options: [
-						{ value: 'spa', label: 'Single Page Application (only client-side)' },
-						{ value: 'ssg', label: 'Static Site Generation (prerenders pages)' },
-					],
-				}),
 			language: () =>
 				prompts.select({
 					message: 'Project language:',
@@ -56,13 +47,16 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 						{ value: 'ts', label: 'TypeScript' },
 					],
 				}),
-			useRouter: ({ results }) =>
-				results.appType === 'spa'
-					? prompts.confirm({
-							message: 'Use router?',
-							initialValue: false,
-					  })
-					: Promise.resolve(false),
+			useRouter: () =>
+				prompts.confirm({
+					message: 'Use router?',
+					initialValue: false,
+				}),
+			usePrerender: () =>
+				prompts.confirm({
+					message: 'Prerender app (SSG)?',
+					initialValue: false,
+				}),
 			useESLint: () =>
 				prompts.confirm({
 					message: 'Use ESLint?',
@@ -81,13 +75,13 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 
 	await useSpinner(
 		'Setting up your project directory...',
-		() => scaffold(targetDir, { useTS, useRouter, useESLint, appType }),
+		() => scaffold(targetDir, { useTS, useRouter, usePrerender, useESLint }),
 		'Set up project directory',
 	);
 
 	await useSpinner(
 		'Installing project dependencies...',
-		() => installDeps(targetDir, packageManager, { useTS, useRouter, useESLint, appType }),
+		() => installDeps(targetDir, packageManager, { useTS, useRouter, usePrerender, useESLint }),
 		'Installed project dependencies',
 	);
 
@@ -116,9 +110,9 @@ async function useSpinner(startMessage, fn, finishMessage) {
 /**
  * @typedef {Object} ConfigOptions
  * @property {boolean} useTS
- * @property {unknown} useRouter
+ * @property {boolean} useRouter
+ * @property {boolean} usePrerender
  * @property {boolean} useESLint
- * @property {string} appType
  */
 
 /**
@@ -131,16 +125,25 @@ async function scaffold(to, opts) {
 	await fs.mkdir(to, { recursive: true });
 
 	const __dirname = dirname(fileURLToPath(import.meta.url));
-	if (opts.appType === 'spa') {
-		await templateDir(resolve(__dirname, '../templates', 'base'), to, opts.useTS);
-	} else {
-		await templateDir(resolve(__dirname, '../templates', 'ssr'), to, opts.useTS);
-	}
+	await templateDir(resolve(__dirname, '../templates', 'base'), to, opts.useTS);
 
 	if (opts.useRouter) {
 		await templateDir(
 			resolve(__dirname, '../templates', 'config', 'router'),
 			resolve(to, 'src'),
+			opts.useTS,
+		);
+	}
+
+	if (opts.usePrerender) {
+		await templateDir(
+			resolve(
+				__dirname,
+				'../templates',
+				'config',
+				opts.useRouter ? 'prerender-router' : 'prerender',
+			),
+			to,
 			opts.useTS,
 		);
 	}
@@ -203,7 +206,7 @@ async function installDeps(to, packageManager, opts) {
 		await install(['typescript'], { prefer: packageManager, cwd: to, dev: true });
 	}
 
-	if (opts.useRouter) {
+	if (opts.useRouter || opts.usePrerender) {
 		await install(['preact-iso', 'preact-render-to-string'], {
 			prefer: packageManager,
 			cwd: to,
