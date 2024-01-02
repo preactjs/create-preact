@@ -3,7 +3,7 @@
 Create a Vite-powered Preact app in seconds
 
 <p align="center">
-  <img src="https://github.com/preactjs/create-preact/blob/master/media/screenshot.png?raw=true">
+  <img src="https://github.com/preactjs/create-preact/blob/master/media/demo.gif?raw=true">
 </p>
 
 ## Usage
