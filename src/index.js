@@ -146,6 +146,10 @@ async function scaffold(to, opts) {
 			to,
 			opts.useTS,
 		);
+
+		const htmlPath = resolve(to, 'index.html');
+		const html = (await fs.readFile(htmlPath, 'utf-8')).replace('<script', '<script prerender');
+		await fs.writeFile(htmlPath, html);
 	}
 
 	if (opts.useTS) {
@@ -153,7 +157,7 @@ async function scaffold(to, opts) {
 
 		const htmlPath = resolve(to, 'index.html');
 		const html = (await fs.readFile(htmlPath, 'utf-8')).replace('index.jsx', 'index.tsx');
-		return await fs.writeFile(htmlPath, html);
+		await fs.writeFile(htmlPath, html);
 	}
 
 	if (opts.useESLint) {
