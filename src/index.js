@@ -3,7 +3,7 @@ import { promises as fs, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as prompts from '@clack/prompts';
-import { install, projectInstall } from 'pkg-install';
+import { installPackage, detectPackageManager } from '@antfu/install-pkg';
 import * as kl from 'kolorist';
 
 const s = prompts.spinner();
@@ -16,7 +16,13 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 	//
 	// Don't love the flag, need to find a better name.
 	const skipHint = process.argv.slice(2).includes('--skip-hints');
-	const packageManager = /yarn/.test(process.env.npm_execpath) ? 'yarn' : 'npm';
+	const packageManager =
+		(await detectPackageManager()) ??
+		(/yarn/.test(process.env.npm_execpath)
+			? 'yarn'
+			: process.env.PNPM_PACKAGE_NAME
+			? 'pnpm'
+			: 'npm');
 
 	prompts.intro(
 		kl.trueColor(...brandColor)(
@@ -88,7 +94,15 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 	if (!skipHint) {
 		const gettingStarted = `
 			${kl.dim('$')} ${kl.lightBlue(`cd ${dir}`)}
-			${kl.dim('$')} ${kl.lightBlue(`${packageManager === 'npm' ? 'npm run' : 'yarn'} dev`)}
+			${kl.dim('$')} ${kl.lightBlue(
+			`${
+				packageManager.includes('yarn')
+					? 'yarn'
+					: packageManager.includes('pnpm')
+					? 'pnpm'
+					: 'npm run'
+			} dev`,
+		)}
 		`;
 		prompts.note(gettingStarted.trim().replace(/^\t\t\t/gm, ''), 'Getting Started');
 	}
@@ -200,26 +214,26 @@ async function templateDir(from, to, useTS) {
 
 /**
  * @param {string} to
- * @param {'yarn' | 'npm'} packageManager
+ * @param {import('@antfu/install-pkg').Agent} packageManager
  * @param {ConfigOptions} opts
  */
 async function installDeps(to, packageManager, opts) {
-	await projectInstall({ prefer: packageManager, cwd: to });
+	await installPackage(['preact'], { packageManager, cwd: to });
 
 	if (opts.useTS) {
-		await install(['typescript'], { prefer: packageManager, cwd: to, dev: true });
+		await installPackage(['typescript'], { packageManager, cwd: to, dev: true });
 	}
 
 	if (opts.useRouter || opts.usePrerender) {
-		await install(['preact-iso', 'preact-render-to-string'], {
-			prefer: packageManager,
+		await installPackage(['preact-iso', 'preact-render-to-string'], {
+			packageManager,
 			cwd: to,
 		});
 	}
 
 	if (opts.useESLint) {
-		await install(['eslint', 'eslint-config-preact'], {
-			prefer: packageManager,
+		await installPackage(['eslint', 'eslint-config-preact'], {
+			packageManager,
 			cwd: to,
 			dev: true,
 		});
