@@ -94,7 +94,15 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 	if (!skipHint) {
 		const gettingStarted = `
 			${kl.dim('$')} ${kl.lightBlue(`cd ${dir}`)}
-			${kl.dim('$')} ${kl.lightBlue(`${packageManager === 'npm' ? 'npm run' : 'yarn'} dev`)}
+			${kl.dim('$')} ${kl.lightBlue(
+			`${
+				packageManager.includes('yarn')
+					? 'yarn'
+					: packageManager.includes('pnpm')
+					? 'pnpm'
+					: 'npm run'
+			} dev`,
+		)}
 		`;
 		prompts.note(gettingStarted.trim().replace(/^\t\t\t/gm, ''), 'Getting Started');
 	}
@@ -206,7 +214,7 @@ async function templateDir(from, to, useTS) {
 
 /**
  * @param {string} to
- * @param {'yarn' | 'npm' | 'pnpm'} packageManager
+ * @param {import('@antfu/install-pkg').Agent} packageManager
  * @param {ConfigOptions} opts
  */
 async function installDeps(to, packageManager, opts) {
