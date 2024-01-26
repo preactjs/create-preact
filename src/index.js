@@ -17,7 +17,12 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 	// Don't love the flag, need to find a better name.
 	const skipHint = process.argv.slice(2).includes('--skip-hints');
 	const packageManager =
-		(await detectPackageManager()) ?? (/yarn/.test(process.env.npm_execpath) ? 'yarn' : 'npm');
+		(await detectPackageManager()) ??
+		(/yarn/.test(process.env.npm_execpath)
+			? 'yarn'
+			: process.env.PNPM_PACKAGE_NAME
+			? 'pnpm'
+			: 'npm');
 
 	prompts.intro(
 		kl.trueColor(...brandColor)(
