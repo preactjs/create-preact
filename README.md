@@ -9,7 +9,11 @@ Create a Vite-powered Preact app in seconds
 ## Usage
 
 ```sh
-npm init preact
+$ npm init preact
+
+$ yarn create preact
+
+$ pnpm create preact
 ```
 
 ## License
