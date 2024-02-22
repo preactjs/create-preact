@@ -218,24 +218,20 @@ async function templateDir(from, to, useTS) {
  * @param {ConfigOptions} opts
  */
 async function installDeps(to, packageManager, opts) {
-	await installPackage(['preact'], { packageManager, cwd: to });
+	const dependencies = [];
+	const devDependencies = [];
 
-	if (opts.useTS) {
-		await installPackage(['typescript'], { packageManager, cwd: to, dev: true });
+	const installOpts = {
+		packageManager,
+		cwd: to,
+		silent: true,
 	}
 
-	if (opts.useRouter || opts.usePrerender) {
-		await installPackage(['preact-iso', 'preact-render-to-string'], {
-			packageManager,
-			cwd: to,
-		});
-	}
+	if (opts.useTS)	devDependencies.push('typescript');
+	if (opts.useRouter)	dependencies.push('preact-iso');
+	if (opts.usePrerender) dependencies.push('preact-iso', 'preact-render-to-string')
+	if (opts.useESLint)	devDependencies.push('eslint', 'eslint-config-preact');
 
-	if (opts.useESLint) {
-		await installPackage(['eslint', 'eslint-config-preact'], {
-			packageManager,
-			cwd: to,
-			dev: true,
-		});
-	}
+	await installPackage(dependencies, { ...installOpts });
+	devDependencies.length && installPackage(devDependencies, { ...installOpts, dev: true});
 }
