@@ -3,13 +3,18 @@
 	"version": "0.4.2",
 	"description": "Create a Vite-powered Preact app in seconds",
 	"type": "module",
-	"bin": "./src/index.js",
+	"bin": {
+		"create-preact": "src/index.js"
+	},
 	"scripts": {
 		"format": "prettier --write --ignore-path .gitignore ."
 	},
 	"authors": "The Preact Authors (https://preactjs.com)",
 	"license": "MIT",
-	"repository": "https://github.com/preactjs/create-preact",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/preactjs/create-preact.git"
+	},
 	"files": [
 		"src",
 		"templates",
