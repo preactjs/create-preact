@@ -224,10 +224,10 @@ async function installDeps(to, packageManager, opts) {
 		to,
 	};
 
-	if (opts.useTS)	devDependencies.push('typescript');
-	if (opts.useRouter)	dependencies.push('preact-iso');
-	if (opts.usePrerender) dependencies.push('preact-iso', 'preact-render-to-string')
-	if (opts.useESLint)	devDependencies.push('eslint', 'eslint-config-preact');
+	if (opts.useTS) devDependencies.push('typescript');
+	if (opts.useRouter) dependencies.push('preact-iso');
+	if (opts.usePrerender) dependencies.push('preact-iso', 'preact-render-to-string');
+	if (opts.useESLint) devDependencies.push('eslint', 'eslint-config-preact');
 
 	await installPackages(dependencies, { ...installOpts });
 	devDependencies.length && installPackages(devDependencies, { ...installOpts, dev: true });
