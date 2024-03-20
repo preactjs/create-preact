@@ -3,7 +3,7 @@ import { promises as fs, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as prompts from '@clack/prompts';
-import { installPackage, detectPackageManager } from '@antfu/install-pkg';
+import { execa } from 'execa';
 import * as kl from 'kolorist';
 
 const s = prompts.spinner();
@@ -16,13 +16,11 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 	//
 	// Don't love the flag, need to find a better name.
 	const skipHint = process.argv.slice(2).includes('--skip-hints');
-	const packageManager =
-		(await detectPackageManager()) ??
-		(/yarn/.test(process.env.npm_execpath)
-			? 'yarn'
-			: process.env.PNPM_PACKAGE_NAME
-			? 'pnpm'
-			: 'npm');
+	const packageManager = /yarn/.test(process.env.npm_execpath)
+		? 'yarn'
+		: process.env.PNPM_PACKAGE_NAME
+		? 'pnpm'
+		: 'npm';
 
 	prompts.intro(
 		kl.trueColor(...brandColor)(
@@ -214,7 +212,7 @@ async function templateDir(from, to, useTS) {
 
 /**
  * @param {string} to
- * @param {import('@antfu/install-pkg').Agent} packageManager
+ * @param {'yarn' | 'pnpm' | 'npm'} packageManager
  * @param {ConfigOptions} opts
  */
 async function installDeps(to, packageManager, opts) {
@@ -223,15 +221,34 @@ async function installDeps(to, packageManager, opts) {
 
 	const installOpts = {
 		packageManager,
-		cwd: to,
-		silent: true,
-	}
+		to,
+	};
 
 	if (opts.useTS)	devDependencies.push('typescript');
 	if (opts.useRouter)	dependencies.push('preact-iso');
 	if (opts.usePrerender) dependencies.push('preact-iso', 'preact-render-to-string')
 	if (opts.useESLint)	devDependencies.push('eslint', 'eslint-config-preact');
 
-	await installPackage(dependencies, { ...installOpts });
-	devDependencies.length && installPackage(devDependencies, { ...installOpts, dev: true});
+	await installPackages(dependencies, { ...installOpts });
+	devDependencies.length && installPackages(devDependencies, { ...installOpts, dev: true });
+}
+
+/**
+ * @param {string[]} pkgs
+ * @param {{ packageManager: 'yarn' | 'pnpm' | 'npm', to: string, dev?: boolean }} opts
+ */
+function installPackages(pkgs, opts) {
+	return execa(
+		opts.packageManager,
+		[
+			// `yarn add` will fail if nothing is provided
+			opts.packageManager === 'yarn' ? (pkgs.length ? 'add' : '') : 'install',
+			opts.dev ? '-D' : '',
+			...pkgs,
+		].filter(Boolean),
+		{
+			stdio: 'ignore',
+			cwd: opts.to,
+		},
+	);
 }

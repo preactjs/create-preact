@@ -2,13 +2,6 @@
 # yarn lockfile v1
 
 
-"@antfu/install-pkg@^0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@antfu/install-pkg/-/install-pkg-0.3.1.tgz#f63b3c98f92b455cd0929d4503eab276c9680943"
-  integrity sha512-A3zWY9VeTPnxlMiZtsGHw2lSd3ghwvL8s9RiGOtqvDxhhFfZ781ynsGBa/iUnDJ5zBrmTFQrJDud3TGgRISaxw==
-  dependencies:
-    execa "^8.0.1"
-
 "@clack/core@^0.3.2":
   version "0.3.2"
   resolved "https://registry.npmjs.org/@clack/core/-/core-0.3.2.tgz"
@@ -72,7 +65,7 @@ is-stream@^3.0.0:
 
 isexe@^2.0.0:
   version "2.0.0"
-  resolved "https://registry.npmjs.org/isexe/-/isexe-2.0.0.tgz"
+  resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
   integrity sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==
 
 kolorist@^1.8.0:
@@ -91,9 +84,9 @@ mimic-fn@^4.0.0:
   integrity sha512-vqiC06CuhBTUdZH+RYl8sFrL096vA45Ok5ISO6sE/Mr1jRbGH4Csnhi8f3wKVl7x8mO4Au7Ir9D3Oyv1VYMFJw==
 
 npm-run-path@^5.1.0:
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/npm-run-path/-/npm-run-path-5.2.0.tgz#224cdd22c755560253dd71b83a1ef2f758b2e955"
-  integrity sha512-W4/tgAXFqFA0iL7fk0+uQ3g7wkL8xJmx3XdK0VGb4cHW//eZTtKGvFBBoRKVTpY7n6ze4NL9ly7rgXcHufqXKg==
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/npm-run-path/-/npm-run-path-5.3.0.tgz#e23353d0ebb9317f174e93417e4a4d82d0249e9f"
+  integrity sha512-ppwTtiJZq0O/ai0z7yfudtBpWIoxM8yE6nHi1X47eFR2EWORqfbu6CnPlNsjeN683eT0qG6H/Pyf9fCcvjnnnQ==
   dependencies:
     path-key "^4.0.0"
 
