@@ -76,31 +76,25 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 	);
 	const targetDir = resolve(process.cwd(), dir);
 	const useTS = language === 'ts';
+	/** @type {ConfigOptions} */
+	const opts = { packageManager, useTS, useRouter, usePrerender, useESLint };
 
 	await useSpinner(
 		'Setting up your project directory...',
-		() => scaffold(targetDir, { useTS, useRouter, usePrerender, useESLint }),
+		() => scaffold(targetDir, opts),
 		'Set up project directory',
 	);
 
 	await useSpinner(
 		'Installing project dependencies...',
-		() => installDeps(targetDir, packageManager, { useTS, useRouter, usePrerender, useESLint }),
+		() => installDeps(targetDir, opts),
 		'Installed project dependencies',
 	);
 
 	if (!skipHint) {
 		const gettingStarted = `
 			${kl.dim('$')} ${kl.lightBlue(`cd ${dir}`)}
-			${kl.dim('$')} ${kl.lightBlue(
-			`${
-				packageManager.includes('yarn')
-					? 'yarn'
-					: packageManager.includes('pnpm')
-					? 'pnpm'
-					: 'npm run'
-			} dev`,
-		)}
+			${kl.dim('$')} ${kl.lightBlue(`${packageManager == 'npm' ? 'npm run' : packageManager} dev`)}
 		`;
 		prompts.note(gettingStarted.trim().replace(/^\t\t\t/gm, ''), 'Getting Started');
 	}
@@ -121,6 +115,7 @@ async function useSpinner(startMessage, fn, finishMessage) {
 
 /**
  * @typedef {Object} ConfigOptions
+ * @property {'yarn' | 'pnpm' | 'npm'} packageManager
  * @property {boolean} useTS
  * @property {boolean} useRouter
  * @property {boolean} usePrerender
@@ -137,13 +132,13 @@ async function scaffold(to, opts) {
 	await fs.mkdir(to, { recursive: true });
 
 	const __dirname = dirname(fileURLToPath(import.meta.url));
-	await templateDir(resolve(__dirname, '../templates', 'base'), to, opts.useTS);
+	await templateDir(resolve(__dirname, '../templates', 'base'), to, opts);
 
 	if (opts.useRouter) {
 		await templateDir(
 			resolve(__dirname, '../templates', 'config', 'router'),
 			resolve(to, 'src'),
-			opts.useTS,
+			opts,
 		);
 	}
 
@@ -156,7 +151,7 @@ async function scaffold(to, opts) {
 				opts.useRouter ? 'prerender-router' : 'prerender',
 			),
 			to,
-			opts.useTS,
+			opts,
 		);
 
 		const htmlPath = resolve(to, 'index.html');
@@ -188,9 +183,9 @@ async function scaffold(to, opts) {
  *
  * @param {string} from
  * @param {string} to
- * @param {boolean} useTS
+ * @param {ConfigOptions} opts
  */
-async function templateDir(from, to, useTS) {
+async function templateDir(from, to, opts) {
 	const files = await fs.readdir(from);
 	const results = await Promise.all(
 		files.map(async (f) => {
@@ -198,9 +193,15 @@ async function templateDir(from, to, useTS) {
 			const filename = resolve(from, f);
 			if ((await fs.stat(filename)).isDirectory()) {
 				await fs.mkdir(resolve(to, f), { recursive: true });
-				return templateDir(filename, resolve(to, f), useTS);
+				return templateDir(filename, resolve(to, f), opts);
 			}
-			if (useTS && /\.jsx?$/.test(f)) f = f.replace('.js', '.ts');
+			if (opts.useTS && /\.jsx?$/.test(f)) f = f.replace('.js', '.ts');
+			if (opts.packageManager !== 'npm' && f === 'README.md') {
+				return await fs.writeFile(
+					resolve(to, f),
+					(await fs.readFile(filename, 'utf-8')).replace(/npm run/g, opts.packageManager),
+				);
+			}
 			// Publishing to npm renames the .gitignore to .npmignore
 			// https://github.com/npm/npm/issues/7252#issuecomment-253339460
 			if (f === '_gitignore') f = '.gitignore';
@@ -212,15 +213,14 @@ async function templateDir(from, to, useTS) {
 
 /**
  * @param {string} to
- * @param {'yarn' | 'pnpm' | 'npm'} packageManager
  * @param {ConfigOptions} opts
  */
-async function installDeps(to, packageManager, opts) {
+async function installDeps(to, opts) {
 	const dependencies = [];
 	const devDependencies = [];
 
 	const installOpts = {
-		packageManager,
+		packageManager: opts.packageManager,
 		to,
 	};
 
