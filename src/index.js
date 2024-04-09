@@ -100,6 +100,7 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 	}
 
 	prompts.outro(kl.green(`You're all set!`));
+	process.exit(0)
 })();
 
 /**
