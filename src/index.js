@@ -250,7 +250,6 @@ function installPackages(pkgs, opts) {
 }
 
 /**
- *
  * @returns {'yarn' | 'pnpm' | 'npm'}
  */
 function getPkgManager() {
