@@ -16,11 +16,7 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 	//
 	// Don't love the flag, need to find a better name.
 	const skipHint = process.argv.slice(2).includes('--skip-hints');
-	const packageManager = /yarn/.test(process.env.npm_execpath)
-		? 'yarn'
-		: process.env.PNPM_PACKAGE_NAME
-		? 'pnpm'
-		: 'npm';
+	const packageManager = getPkgManager();
 
 	prompts.intro(
 		kl.trueColor(...brandColor)(
@@ -251,4 +247,15 @@ function installPackages(pkgs, opts) {
 			cwd: opts.to,
 		},
 	);
+}
+
+/**
+ *
+ * @returns {'yarn' | 'pnpm' | 'npm'}
+ */
+function getPkgManager() {
+  const userAgent = process.env.npm_config_user_agent || ''
+  if (userAgent.startsWith('yarn')) return 'yarn'
+  if (userAgent.startsWith('pnpm')) return 'pnpm'
+  return 'npm'
 }
