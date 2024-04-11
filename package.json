@@ -1,6 +1,6 @@
 {
 	"name": "create-preact",
-	"version": "0.4.2",
+	"version": "0.4.3",
 	"description": "Create a Vite-powered Preact app in seconds",
 	"type": "module",
 	"bin": {
