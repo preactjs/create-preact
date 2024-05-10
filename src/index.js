@@ -226,7 +226,7 @@ async function installDeps(to, opts) {
 	if (opts.useESLint) devDependencies.push('eslint', 'eslint-config-preact');
 
 	await installPackages(dependencies, { ...installOpts });
-	devDependencies.length && installPackages(devDependencies, { ...installOpts, dev: true });
+	devDependencies.length && await installPackages(devDependencies, { ...installOpts, dev: true });
 }
 
 /**
