@@ -10,12 +10,13 @@ const s = prompts.spinner();
 const brandColor = /** @type {const} */ ([174, 128, 255]);
 
 (async function createPreact() {
+	const args = process.argv.slice(2);
+
 	// Silences the 'Getting Started' info, mainly
 	// for use in other initializers that may wrap this
 	// one but provide their own scripts/instructions.
-	//
-	// Don't love the flag, need to find a better name.
-	const skipHint = process.argv.slice(2).includes('--skip-hints');
+	const skipHint = args.includes('--skip-hints');
+	const argDir = args.find((arg) => !arg.startsWith('--'));
 	const packageManager = getPkgManager();
 
 	prompts.intro(
@@ -27,17 +28,19 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 	const { dir, language, useRouter, usePrerender, useESLint } = await prompts.group(
 		{
 			dir: () =>
-				prompts.text({
-					message: 'Project directory:',
-					placeholder: 'my-preact-app',
-					validate(value) {
-						if (value.length == 0) {
-							return 'Directory name is required!';
-						} else if (existsSync(value)) {
-							return 'Refusing to overwrite existing directory or file! Please provide a non-clashing name.';
-						}
-					},
-				}),
+				argDir
+					? Promise.resolve(argDir)
+					: prompts.text({
+							message: 'Project directory:',
+							placeholder: 'my-preact-app',
+							validate(value) {
+								if (value.length == 0) {
+									return 'Directory name is required!';
+								} else if (existsSync(value)) {
+									return 'Refusing to overwrite existing directory or file! Please provide a non-clashing name.';
+								}
+							},
+					  }),
 			language: () =>
 				prompts.select({
 					message: 'Project language:',
@@ -226,7 +229,8 @@ async function installDeps(to, opts) {
 	if (opts.useESLint) devDependencies.push('eslint', 'eslint-config-preact');
 
 	await installPackages(dependencies, { ...installOpts });
-	devDependencies.length && await installPackages(devDependencies, { ...installOpts, dev: true });
+	devDependencies.length &&
+		(await installPackages(devDependencies, { ...installOpts, dev: true }));
 }
 
 /**
@@ -253,8 +257,8 @@ function installPackages(pkgs, opts) {
  * @returns {'yarn' | 'pnpm' | 'npm'}
  */
 function getPkgManager() {
-  const userAgent = process.env.npm_config_user_agent || ''
-  if (userAgent.startsWith('yarn')) return 'yarn'
-  if (userAgent.startsWith('pnpm')) return 'pnpm'
-  return 'npm'
+	const userAgent = process.env.npm_config_user_agent || '';
+	if (userAgent.startsWith('yarn')) return 'yarn';
+	if (userAgent.startsWith('pnpm')) return 'pnpm';
+	return 'npm';
 }
