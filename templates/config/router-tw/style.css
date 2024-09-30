@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+#app {
+	@apply flex flex-col min-h-screen;
+}
+
+header a {
+	@apply text-white p-3;
+}
+
+header a.active {
+	@apply bg-[#0005];
+}
+
+header a:hover {
+	@apply bg-[#0008];
+}
+
+main {
+	@apply flex-auto flex items-center max-w-7xl sm:m-auto text-center m-8;
+}

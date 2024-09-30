@@ -25,7 +25,7 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 		),
 	);
 
-	const { dir, language, useRouter, usePrerender, useESLint } = await prompts.group(
+	const { dir, language, useRouter, usePrerender, useESLint, useTailwind } = await prompts.group(
 		{
 			dir: () =>
 				argDir
@@ -65,6 +65,11 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 					message: 'Use ESLint?',
 					initialValue: false,
 				}),
+			useTailwind: () =>
+				prompts.confirm({
+					message: 'Use TailwindCSS?',
+					initialValue: false,
+				}),
 		},
 		{
 			onCancel: () => {
@@ -76,7 +81,7 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 	const targetDir = resolve(process.cwd(), dir);
 	const useTS = language === 'ts';
 	/** @type {ConfigOptions} */
-	const opts = { packageManager, useTS, useRouter, usePrerender, useESLint };
+	const opts = { packageManager, useTS, useRouter, usePrerender, useESLint, useTailwind };
 
 	await useSpinner(
 		'Setting up your project directory...',
@@ -119,6 +124,7 @@ async function useSpinner(startMessage, fn, finishMessage) {
  * @property {boolean} useRouter
  * @property {boolean} usePrerender
  * @property {boolean} useESLint
+ * @property {boolean} useTailwind
  */
 
 /**
@@ -131,11 +137,15 @@ async function scaffold(to, opts) {
 	await fs.mkdir(to, { recursive: true });
 
 	const __dirname = dirname(fileURLToPath(import.meta.url));
-	await templateDir(resolve(__dirname, '../templates', 'base'), to, opts);
+	await templateDir(
+		resolve(__dirname, '../templates', opts.useTailwind ? 'base-tw' : 'base'),
+		to,
+		opts,
+	);
 
 	if (opts.useRouter) {
 		await templateDir(
-			resolve(__dirname, '../templates', 'config', 'router'),
+			resolve(__dirname, '../templates', 'config', opts.useTailwind ? 'router-tw' : 'router'),
 			resolve(to, 'src'),
 			opts,
 		);
@@ -147,7 +157,11 @@ async function scaffold(to, opts) {
 				__dirname,
 				'../templates',
 				'config',
-				opts.useRouter ? 'prerender-router' : 'prerender',
+				opts.useRouter
+					? 'prerender-router'
+					: opts.useTailwind
+					? 'prerender-tw'
+					: 'prerender',
 			),
 			to,
 			opts,
@@ -174,6 +188,10 @@ async function scaffold(to, opts) {
 		};
 		await fs.writeFile(pkgPath, JSON.stringify(pkg, null, '\t'));
 	}
+
+	if (opts.useTailwind) {
+		await templateDir(resolve(__dirname, '../templates', 'config', 'tw-config'), to, opts);
+	}
 }
 
 /**
@@ -194,7 +212,8 @@ async function templateDir(from, to, opts) {
 				await fs.mkdir(resolve(to, f), { recursive: true });
 				return templateDir(filename, resolve(to, f), opts);
 			}
-			if (opts.useTS && /\.jsx?$/.test(f)) f = f.replace('.js', '.ts');
+			if (opts.useTS && /\.jsx?$/.test(f) && f !== 'postcss.config.js')
+				f = f.replace('.js', '.ts');
 			if (opts.packageManager !== 'npm' && f === 'README.md') {
 				return await fs.writeFile(
 					resolve(to, f),
@@ -227,6 +246,7 @@ async function installDeps(to, opts) {
 	if (opts.useRouter) dependencies.push('preact-iso');
 	if (opts.usePrerender) dependencies.push('preact-iso', 'preact-render-to-string');
 	if (opts.useESLint) devDependencies.push('eslint', 'eslint-config-preact');
+	if (opts.useTailwind) devDependencies.push('tailwindcss', 'postcss', 'autoprefixer');
 
 	await installPackages(dependencies, { ...installOpts });
 	devDependencies.length &&

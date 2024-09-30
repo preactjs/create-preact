@@ -34,5 +34,6 @@
 		"prettier-config-rschristian": "^0.1.1",
 		"typescript": "^5.0.0"
 	},
-	"prettier": "prettier-config-rschristian"
+	"prettier": "prettier-config-rschristian",
+	"packageManager": "yarn@1.22.22"
 }
