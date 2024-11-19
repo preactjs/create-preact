@@ -3,7 +3,7 @@ import { promises as fs, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as prompts from '@clack/prompts';
-import { execa } from 'execa';
+import { x } from 'tinyexec';
 import * as kl from 'kolorist';
 
 const s = prompts.spinner();
@@ -238,7 +238,7 @@ async function installDeps(to, opts) {
  * @param {{ packageManager: 'yarn' | 'pnpm' | 'npm', to: string, dev?: boolean }} opts
  */
 function installPackages(pkgs, opts) {
-	return execa(
+	return x(
 		opts.packageManager,
 		[
 			// `yarn add` will fail if nothing is provided
@@ -247,8 +247,10 @@ function installPackages(pkgs, opts) {
 			...pkgs,
 		].filter(Boolean),
 		{
-			stdio: 'ignore',
-			cwd: opts.to,
+			nodeOptions: {
+				stdio: 'ignore',
+				cwd: opts.to,
+			}
 		},
 	);
 }
