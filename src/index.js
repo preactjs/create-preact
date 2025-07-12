@@ -250,7 +250,7 @@ function installPackages(pkgs, opts) {
 			nodeOptions: {
 				stdio: 'ignore',
 				cwd: opts.to,
-			}
+			},
 		},
 	);
 }
