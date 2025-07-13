@@ -2,6 +2,7 @@
 import { promises as fs, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import mri from 'mri';
 import * as prompts from '@clack/prompts';
 import { x } from 'tinyexec';
 import * as kl from 'kolorist';
@@ -9,14 +10,37 @@ import * as kl from 'kolorist';
 const s = prompts.spinner();
 const brandColor = /** @type {const} */ ([174, 128, 255]);
 
-(async function createPreact() {
-	const args = process.argv.slice(2);
+const flagDefaults = {
+	'skip-hints': false,
+	lang: 'js',
+	'use-router': false,
+	'use-prerender': false,
+	'use-eslint': false,
+};
 
-	// Silences the 'Getting Started' info, mainly
-	// for use in other initializers that may wrap this
-	// one but provide their own scripts/instructions.
-	const skipHint = args.includes('--skip-hints');
-	const argDir = args.find((arg) => !arg.startsWith('--'));
+(async function createPreact() {
+	const argv = mri(process.argv.slice(2), {
+		string: ['lang'],
+		boolean: ['skip-hints', 'router', 'prerender', 'eslint'],
+	});
+
+	const { argDir, flagPassed } = processArgs(argv);
+
+	if (flagPassed && !argDir) {
+		console.error(
+			kl.red(
+				'Error: No project directory specified. One must be provided for non-interactive sessions.',
+			),
+		);
+	}
+
+	// Assign defaults only after we've determined if the user passed any flags
+	argv['skip-hints'] ??= flagDefaults['skip-hints'];
+	argv['lang'] ??= flagDefaults.lang;
+	argv['use-router'] ??= flagDefaults['use-router'];
+	argv['use-prerender'] ??= flagDefaults['use-prerender'];
+	argv['use-eslint'] ??= flagDefaults['use-eslint'];
+
 	const packageManager = getPkgManager();
 
 	prompts.intro(
@@ -25,54 +49,63 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 		),
 	);
 
-	const { dir, language, useRouter, usePrerender, useESLint } = await prompts.group(
-		{
-			dir: () =>
-				argDir
-					? Promise.resolve(argDir)
-					: prompts.text({
-							message: 'Project directory:',
-							placeholder: 'my-preact-app',
-							validate(value) {
-								if (value.length == 0) {
-									return 'Directory name is required!';
-								} else if (existsSync(value)) {
-									return 'Refusing to overwrite existing directory or file! Please provide a non-clashing name.';
-								}
-							},
-					  }),
-			language: () =>
-				prompts.select({
-					message: 'Project language:',
-					initialValue: 'js',
-					options: [
-						{ value: 'js', label: 'JavaScript' },
-						{ value: 'ts', label: 'TypeScript' },
-					],
-				}),
-			useRouter: () =>
-				prompts.confirm({
-					message: 'Use router?',
-					initialValue: false,
-				}),
-			usePrerender: () =>
-				prompts.confirm({
-					message: 'Prerender app (SSG)?',
-					initialValue: false,
-				}),
-			useESLint: () =>
-				prompts.confirm({
-					message: 'Use ESLint?',
-					initialValue: false,
-				}),
-		},
-		{
-			onCancel: () => {
-				prompts.cancel(kl.yellow('Cancelled'));
-				process.exit(0);
+	let dir = argDir,
+		language = argv['lang'],
+		useRouter = argv['router'],
+		usePrerender = argv['prerender'],
+		useESLint = argv['eslint'];
+
+	if (!flagPassed) {
+		({ dir, language, useRouter, usePrerender, useESLint } = await prompts.group(
+			{
+				dir: () =>
+					argDir
+						? Promise.resolve(argDir)
+						: prompts.text({
+								message: 'Project directory:',
+								placeholder: 'my-preact-app',
+								validate(value) {
+									if (value.length == 0) {
+										return 'Directory name is required!';
+									} else if (existsSync(value)) {
+										return 'Refusing to overwrite existing directory or file! Please provide a non-clashing name.';
+									}
+								},
+						  }),
+				language: () =>
+					prompts.select({
+						message: 'Project language:',
+						initialValue: 'js',
+						options: [
+							{ value: 'js', label: 'JavaScript' },
+							{ value: 'ts', label: 'TypeScript' },
+						],
+					}),
+				useRouter: () =>
+					prompts.confirm({
+						message: 'Use router?',
+						initialValue: false,
+					}),
+				usePrerender: () =>
+					prompts.confirm({
+						message: 'Prerender app (SSG)?',
+						initialValue: false,
+					}),
+				useESLint: () =>
+					prompts.confirm({
+						message: 'Use ESLint?',
+						initialValue: false,
+					}),
 			},
-		},
-	);
+			{
+				onCancel: () => {
+					prompts.cancel(kl.yellow('Cancelled'));
+					process.exit(0);
+				},
+			},
+		));
+	}
+
 	const targetDir = resolve(process.cwd(), dir);
 	const useTS = language === 'ts';
 	/** @type {ConfigOptions} */
@@ -90,7 +123,7 @@ const brandColor = /** @type {const} */ ([174, 128, 255]);
 		'Installed project dependencies',
 	);
 
-	if (!skipHint) {
+	if (!argv['skip-hints']) {
 		const gettingStarted = `
 			${kl.dim('$')} ${kl.lightBlue(`cd ${dir}`)}
 			${kl.dim('$')} ${kl.lightBlue(`${packageManager == 'npm' ? 'npm run' : packageManager} dev`)}
@@ -263,4 +296,39 @@ function getPkgManager() {
 	if (userAgent.startsWith('yarn')) return 'yarn';
 	if (userAgent.startsWith('pnpm')) return 'pnpm';
 	return 'npm';
+}
+
+/**
+ * @param {Record<string, any>} argv
+ * @returns {{ argDir: string | undefined, flagPassed: boolean }}
+ */
+function processArgs(argv) {
+	let argDir,
+		// bails out of an interactive session
+		flagPassed = false;
+
+	for (const key in argv) {
+		// `mri` has an `unknown` callback arg, but it only works for flags
+		// defined in `alias`, which isn't terribly useful
+		if (!(key in flagDefaults) && key !== '_') {
+			console.warn(kl.yellow(`WARN: Unknown flag passed: '${key}'. Ignoring it.`));
+			continue;
+		}
+
+		if (key == '_' && argv[key].length > 0) {
+			if (argv[key].length > 1) {
+				console.warn(
+					kl.yellow(
+						'WARN: Multiple arguments were passed, only the first will be used.\n',
+					),
+					argv['_'],
+				);
+			}
+			argDir = argv._[0];
+		} else {
+			flagPassed = true;
+		}
+	}
+
+	return { argDir, flagPassed };
 }
