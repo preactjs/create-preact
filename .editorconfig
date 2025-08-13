@@ -13,7 +13,3 @@ indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
-
-[test/fixtures/**/*.expected.*]
-trim_trailing_whitespace = false
-insert_final_newline = false
