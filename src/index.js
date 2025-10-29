@@ -114,7 +114,7 @@ async function useSpinner(startMessage, fn, finishMessage) {
 
 /**
  * @typedef {Object} ConfigOptions
- * @property {'yarn' | 'pnpm' | 'npm'} packageManager
+ * @property {'yarn' | 'pnpm' | 'npm' | 'bun'} packageManager
  * @property {boolean} useTS
  * @property {boolean} useRouter
  * @property {boolean} usePrerender
@@ -235,7 +235,7 @@ async function installDeps(to, opts) {
 
 /**
  * @param {string[]} pkgs
- * @param {{ packageManager: 'yarn' | 'pnpm' | 'npm', to: string, dev?: boolean }} opts
+ * @param {{ packageManager: 'yarn' | 'pnpm' | 'npm' | 'bun', to: string, dev?: boolean }} opts
  */
 function installPackages(pkgs, opts) {
 	return x(
@@ -256,11 +256,12 @@ function installPackages(pkgs, opts) {
 }
 
 /**
- * @returns {'yarn' | 'pnpm' | 'npm'}
+ * @returns {'yarn' | 'pnpm' | 'npm' | 'bun'}
  */
 function getPkgManager() {
 	const userAgent = process.env.npm_config_user_agent || '';
 	if (userAgent.startsWith('yarn')) return 'yarn';
 	if (userAgent.startsWith('pnpm')) return 'pnpm';
+	if (!!process.versions.bun) return 'bun';
 	return 'npm';
 }
