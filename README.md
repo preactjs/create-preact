@@ -14,6 +14,8 @@ $ npm init preact
 $ yarn create preact
 
 $ pnpm create preact
+
+$ bun create preact
 ```
 
 ## License
