@@ -17,7 +17,7 @@ export function Home() {
 				<Resource
 					title="Differences to React"
 					description="If you're coming from React, you may want to check out our docs to see where Preact differs"
-					href="https://preactjs.com/guide/v10/differences-to-react"
+					href="https://preactjs.com/guide/v11/differences-to-react"
 				/>
 				<Resource
 					title="Learn Vite"
