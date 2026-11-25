@@ -195,7 +195,7 @@ async function templateDir(from, to, opts) {
 				return templateDir(filename, resolve(to, f), opts);
 			}
 			if (opts.useTS && /\.jsx?$/.test(f)) f = f.replace('.js', '.ts');
-			if (opts.packageManager !== 'npm' && f === 'README.md') {
+			if (opts.packageManager !== 'npm' && (f === 'README.md' || f === 'AGENTS.md')) {
 				return await fs.writeFile(
 					resolve(to, f),
 					(await fs.readFile(filename, 'utf-8')).replace(/npm run/g, opts.packageManager),
